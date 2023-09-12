@@ -67,19 +67,7 @@ class MardiClient(WikibaseIntegrator):
         elif re.match(wikidata_pattern, entity_str):
             match = re.match(wikidata_pattern, entity_str)
             wikidata_id = match.group(1)
-            if os.environ.get("IMPORTER_API_ENDPOINT") == '':
-                with self.engine.connect() as connection:
-                    metadata = db.MetaData()
-                    table = db.Table(
-                        "wb_id_mapping", metadata, autoload_with=connection
-                    )
-                    sql = db.select(table.columns.local_id).where(
-                        table.columns.wikidata_id == wikidata_id,
-                    )
-                    db_result = connection.execute(sql).fetchone()
-                    if db_result:
-                        return db_result[0]
-            elif wikidata_id.startswith("Q"):
+            if wikidata_id.startswith("Q"):
                 response = requests.get(f'{self.importer_api}/items/{entity_str}/mapping')
                 response = response.json()
                 return response.get('local_id')
@@ -90,7 +78,7 @@ class MardiClient(WikibaseIntegrator):
 
     def search_entity_by_value(self, prop_nr, value):
         prefix = None
-        if (config['SPARQL_ENDPOINT_URL'] == 
+        if (wbi_config['SPARQL_ENDPOINT_URL'] == 
             'http://query.portal.mardi4nfdi.de/proxy/wdqs/bigdata/namespace/wdq/sparql'):
             prefix = "PREFIX wdt: <https://portal.mardi4nfdi.de/prop/direct/>"
 

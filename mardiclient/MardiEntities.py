@@ -223,46 +223,10 @@ class MardiItem(ItemEntity):
         if 'en' in self.labels.values:
             label = self.labels.values['en'].value
 
-        if os.environ.get("IMPORTER_API_ENDPOINT") == '':
-            with self.api.engine.connect() as connection:
-                metadata = db.MetaData()
-                try:
-                    wbt_item_terms = db.Table(
-                        "wbt_item_terms", metadata, autoload_with=connection
-                    )
-                    wbt_term_in_lang = db.Table(
-                        "wbt_term_in_lang", metadata, autoload_with=connection
-                    )
-                    wbt_text_in_lang = db.Table(
-                        "wbt_text_in_lang", metadata, autoload_with=connection
-                    )
-                    wbt_text = db.Table(
-                        "wbt_text", metadata, autoload_with=connection
-                    )
-                    query = (db.select(wbt_item_terms.columns.wbit_item_id)
-                            .join(wbt_term_in_lang, wbt_item_terms.columns.wbit_term_in_lang_id == wbt_term_in_lang.columns.wbtl_id)
-                            .join(wbt_text_in_lang, wbt_term_in_lang.columns.wbtl_text_in_lang_id == wbt_text_in_lang.columns.wbxl_id)
-                            .join(wbt_text, wbt_text.columns.wbx_id == wbt_text_in_lang.columns.wbxl_text_id)
-                            .where(and_(wbt_text.columns.wbx_text == bytes(label, "utf-8"), 
-                                        wbt_term_in_lang.columns.wbtl_type_id == 1,
-                                        wbt_text_in_lang.columns.wbxl_language == bytes("en", "utf-8"))))
-                    results = connection.execute(query).fetchall()
-                    entity_id = []
-                    if results:
-                        for result in results:
-                            entity_id.append(f"Q{str(result[0])}")
-
-                except Exception as e:
-                    raise Exception(
-                        "Error attempting to read mappings from database\n{}".format(e)
-                    )
-                
-                return entity_id
-        else:
-            importer_endpoint = os.environ.get("IMPORTER_API_ENDPOINT")
-            response = requests.get(f'{importer_endpoint}/search/items/{label}')
-            response = response.json()
-            return response.get('QID') or []
+        importer_endpoint = self.api.importer_api
+        response = requests.get(f'{importer_endpoint}/search/items/{label}')
+        response = response.json()
+        return response.get('QID') or []
 
     def add_linker_claim(self, wikidata_id):
         """Function for in-place addition of a claim with the
@@ -303,44 +267,10 @@ class MardiProperty(PropertyEntity):
         if 'en' in self.labels.values:
             label = self.labels.values['en'].value
 
-        if os.environ.get("IMPORTER_API_ENDPOINT") == '':
-            with self.api.engine.connect() as connection:
-                metadata = db.MetaData()
-                try:
-                    wbt_property_terms = db.Table(
-                        "wbt_property_terms", metadata, autoload_with=connection
-                    )
-                    wbt_term_in_lang = db.Table(
-                        "wbt_term_in_lang", metadata, autoload_with=connection
-                    )
-                    wbt_text_in_lang = db.Table(
-                        "wbt_text_in_lang", metadata, autoload_with=connection
-                    )
-                    wbt_text = db.Table(
-                        "wbt_text", metadata, autoload_with=connection
-                    )
-                    query = (db.select(wbt_property_terms.columns.wbpt_property_id)
-                            .join(wbt_term_in_lang, wbt_term_in_lang.columns.wbtl_id == wbt_property_terms.columns.wbpt_term_in_lang_id)
-                            .join(wbt_text_in_lang, wbt_term_in_lang.columns.wbtl_text_in_lang_id == wbt_text_in_lang.columns.wbxl_id)
-                            .join(wbt_text, wbt_text.columns.wbx_id == wbt_text_in_lang.columns.wbxl_text_id)
-                            .where(and_(wbt_text.columns.wbx_text == bytes(label, "utf-8"), 
-                                        wbt_term_in_lang.columns.wbtl_type_id == 1,
-                                        wbt_text_in_lang.columns.wbxl_language == bytes("en", "utf-8"))))
-                    prefix = "P"
-                    results = connection.execute(query).fetchall()
-                    if results:
-                        for result in results:
-                            return f"P{str(result[0])}"
-
-                except Exception as e:
-                    raise Exception(
-                        "Error attempting to read mappings from database\n{}".format(e)
-                    )
-        else:
-            importer_endpoint = os.environ.get("IMPORTER_API_ENDPOINT")
-            response = requests.get(f'{importer_endpoint}/search/properties/{label}')
-            response = response.json()
-            return response.get('PID') or []
+        importer_endpoint = self.api.importer_api
+        response = requests.get(f'{importer_endpoint}/search/properties/{label}')
+        response = response.json()
+        return response.get('PID') or []
 
     def add_linker_claim(self, wikidata_id):
         """Function for in-place addition of a claim with the
