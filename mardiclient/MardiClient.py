@@ -17,13 +17,13 @@ from wikibaseintegrator.datatypes import (URL, CommonsMedia, ExternalID, Form, G
 class MardiClient(WikibaseIntegrator):
     def __init__(self, **kwargs) -> None:
         super().__init__(is_bot=True)
-        self.login = self.setup(**kwargs)
+        self.login = self.config(**kwargs)
         self.importer_api = config['IMPORTER_API_URL']
         self.item = MardiItem(api=self)
         self.property = MardiProperty(api=self)
 
     @staticmethod
-    def setup(user="username", password="password"):
+    def config(user, password):
         """
         Sets up initial configuration for the integrator
 
