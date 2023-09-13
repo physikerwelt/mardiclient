@@ -10,6 +10,7 @@ from wikibaseintegrator.models import Claim, Claims, Qualifiers, Reference
 from wikibaseintegrator.wbi_config import config as wbi_config
 from wikibaseintegrator.wbi_enums import ActionIfExists
 from wikibaseintegrator.wbi_helpers import search_entities, execute_sparql_query
+from wikibaseintegrator.wbi_login import LoginError
 from wikibaseintegrator.datatypes import (URL, CommonsMedia, ExternalID, Form, GeoShape, GlobeCoordinate, Item, Lexeme, Math, MonolingualText, MusicalNotation, Property, Quantity,
                                           Sense, String, TabularData, Time)
 
@@ -22,7 +23,7 @@ class MardiClient(WikibaseIntegrator):
         self.property = MardiProperty(api=self)
 
     @staticmethod
-    def setup(user, password):
+    def setup(user="username", password="password"):
         """
         Sets up initial configuration for the integrator
 
@@ -32,10 +33,13 @@ class MardiClient(WikibaseIntegrator):
         wbi_config["MEDIAWIKI_API_URL"] = config['MEDIAWIKI_API_URL']
         wbi_config["SPARQL_ENDPOINT_URL"] = config['SPARQL_ENDPOINT_URL']
         wbi_config["WIKIBASE_URL"] = config['WIKIBASE_URL']
-        return wbi_login.Clientlogin(
-            user=user,
-            password=password
-        )
+        try:
+            return wbi_login.Clientlogin(
+                user=user,
+                password=password
+            )
+        except LoginError:
+            print('Wrong credentials')
 
     def get_local_id_by_label(self, entity_str, entity_type):
         """Check if entity with a given label or wikidata PID/QID 
