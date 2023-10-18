@@ -23,7 +23,7 @@ class MardiClient(WikibaseIntegrator):
         self.property = MardiProperty(api=self)
 
     @staticmethod
-    def config(user, password):
+    def config(user, password, login_with_bot=False):
         """
         Sets up initial configuration for the integrator
 
@@ -34,10 +34,16 @@ class MardiClient(WikibaseIntegrator):
         wbi_config["SPARQL_ENDPOINT_URL"] = config['SPARQL_ENDPOINT_URL']
         wbi_config["WIKIBASE_URL"] = config['WIKIBASE_URL']
         try:
-            return wbi_login.Clientlogin(
-                user=user,
-                password=password
-            )
+            if login_with_bot:
+                return wbi_login.Login(
+                    user=user,
+                    password=password
+                )
+            else:
+                return wbi_login.Clientlogin(
+                    user=user,
+                    password=password
+                )
         except LoginError:
             print('Wrong credentials')
 
