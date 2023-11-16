@@ -5,11 +5,10 @@ import sqlalchemy as db
 
 from .MardiEntities import MardiItem, MardiProperty
 from .mardi_config import config
+from .mathml_datatype import MathML
 from wikibaseintegrator import WikibaseIntegrator, wbi_login
-from wikibaseintegrator.models import Claim, Claims, Qualifiers, Reference
 from wikibaseintegrator.wbi_config import config as wbi_config
-from wikibaseintegrator.wbi_enums import ActionIfExists
-from wikibaseintegrator.wbi_helpers import search_entities, execute_sparql_query
+from wikibaseintegrator.wbi_helpers import execute_sparql_query
 from wikibaseintegrator.wbi_login import LoginError
 from wikibaseintegrator.datatypes import (URL, CommonsMedia, ExternalID, Form, GeoShape, GlobeCoordinate, Item, Lexeme, Math, MonolingualText, MusicalNotation, Property, Quantity,
                                           Sense, String, TabularData, Time)
@@ -124,8 +123,12 @@ class MardiClient(WikibaseIntegrator):
 
         """
         prop_nr = self.get_local_id_by_label(prop_nr, 'property')
-        prop = self.property.get(entity_id=prop_nr)
-        datatype = prop.datatype.value
+        try:
+            prop = self.property.get(entity_id=prop_nr)
+        except ValueError:
+            datatype = "mathml"
+        else:
+            datatype = prop.datatype.value
         kwargs['prop_nr'] = prop_nr
         kwargs['value'] = value
         if datatype == 'wikibase-item':
@@ -168,3 +171,5 @@ class MardiClient(WikibaseIntegrator):
             return Time(**kwargs)
         elif datatype == 'url':
             return URL(**kwargs)
+        elif datatype == 'mathml':
+            return MathML(**kwargs)
