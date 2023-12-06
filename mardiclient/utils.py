@@ -142,7 +142,8 @@ class MardiDisambiguator(WikibaseIntegrator):
         self.move_page(source_author_id, target_author_id)
 
         # Merge items
-        merge_items(source_QID, target_QID, login=self.login, is_bot=True)
+        results = merge_items(source_QID, target_QID, login=self.login, is_bot=True)
+        return results['from']['id'], results['to']['id'] 
 
 
 class WBAPIException(BaseException):
