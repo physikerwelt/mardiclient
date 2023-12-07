@@ -126,8 +126,14 @@ class MardiDisambiguator(WikibaseIntegrator):
         source_item = self.item.get(entity_id=source_QID)
         target_item = self.item.get(entity_id=target_QID)
 
-        source_label = source_item.labels.get_json()['en']['value']
-        target_label = target_item.labels.get_json()['en']['value']
+        source_label, target_label = "", ""
+
+        source_dict = source_item.labels.get_json()
+        target_dict = target_item.labels.get_json()
+        if 'en' in source_dict.keys():
+            source_label = source_dict['en']['value']
+        if 'en' in target_dict.keys():
+            target_label = target_dict['en']['value']
         
         if len(target_label) < len(source_label):
             source_QID, target_QID = target_QID, source_QID
