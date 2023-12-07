@@ -137,15 +137,22 @@ class MardiDisambiguator(WikibaseIntegrator):
         
         if len(target_label) < len(source_label):
             source_QID, target_QID = target_QID, source_QID
+            source_label, target_label = target_label, source_label
+
+        if ',' in target_label and source_label and ',' not in source_label:
+            source_QID, target_QID = target_QID, source_QID
+            source_label, target_label = target_label, source_label
 
         source_author_id = source_QID.replace('Q', '')
         target_author_id = target_QID.replace('Q', '')
 
-        # Delete target Person page
-        self.delete_page(target_author_id)
+        # Redirect profile page, if it exists
+        if source_label:
+            # Delete target Person page
+            self.delete_page(target_author_id)
 
-        # Move source Page to target Page
-        self.move_page(source_author_id, target_author_id)
+            # Move source Page to target Page
+            self.move_page(source_author_id, target_author_id)
 
         # Merge items
         results = merge_items(source_QID, target_QID, login=self.login, is_bot=True)
