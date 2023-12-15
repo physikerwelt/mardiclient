@@ -83,6 +83,19 @@ class MardiDisambiguator(WikibaseIntegrator):
         token = r1.json()['query']['tokens']['csrftoken']
 
         return token
+
+    def get_page(self, target):
+        target = f"Person:{target}"
+        params = {
+            "action": "parse",
+            "page": {target},
+            "prop": "wikitext",
+            "format": "json"
+        }
+        r1 = self.session.get(config['MEDIAWIKI_API_URL'], params=params)
+        if 'error' in r1.json().keys():
+            return False
+        return True
     
     def delete_page(self, target):
         token = self.get_csrf_token()
@@ -153,6 +166,17 @@ class MardiDisambiguator(WikibaseIntegrator):
 
             # Move source Page to target Page
             self.move_page(source_author_id, target_author_id)
+
+        if not source_label and not target_label:
+
+            source_page_exists = self.get_page(source_author_id)
+            target_page_exists = self.get_page(target_author_id)
+
+            if source_page_exists and not target_page_exists:
+                source_QID, target_QID = target_QID, source_QID
+            elif source_page_exists and target_page_exists:
+                self.delete_page(target_author_id)
+                self.move_page(source_author_id, target_author_id)
 
         # Merge items
         results = merge_items(source_QID, target_QID, login=self.login, is_bot=True)
