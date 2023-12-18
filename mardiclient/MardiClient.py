@@ -158,6 +158,8 @@ class MardiClient(WikibaseIntegrator):
         elif datatype == 'wikibase-property':
             return Property(**kwargs)
         elif datatype == 'quantity':
+            kwargs['amount'] = value
+            kwargs.pop("value")
             return Quantity(**kwargs)
         elif datatype == 'wikibase-sense':
             return Sense(**kwargs)
