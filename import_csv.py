@@ -6,7 +6,7 @@ import csv
 
 from mardiclient import MardiClient
 
-mc = MardiClient(user=os.environ.get('MARDI_USER'), password=os.environ.get('MARDI_PASSWORD'), login_with_bot=True)
+mc = MardiClient(user=os.environ.get('MARDI_USER'), password=os.environ.get('MARDI_PASSWORD'))
 
 
 def import_csv(url):
@@ -19,7 +19,7 @@ def import_csv(url):
 def process_row(row):
     try:
         article = mc.item.get(entity_id=row['article'])
-        article.add_claim('P223', row['software'])
+        article.add_claim('P1463', row['software'])
         article.write()
     except Exception as error:
         print(row, error, file=sys.stderr)
