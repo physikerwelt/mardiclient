@@ -7,12 +7,15 @@ import csv
 from mardiclient import MardiClient
 
 mc = MardiClient(user=os.environ.get('MARDI_USER'), password=os.environ.get('MARDI_PASSWORD'))
-
+rows=[]
 
 def import_csv(url):
     with requests.get(url, stream=True) as r:
         lines = (line.decode('utf-8') for line in r.iter_lines())
         for row in csv.DictReader(lines):
+            rows.append(row)
+
+        for row in rows:
             process_row(row)
 
 
